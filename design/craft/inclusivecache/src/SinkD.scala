@@ -78,5 +78,5 @@ class SinkD(params: InclusiveCacheParameters) extends Module
   io.bs_adr.bits.mask := ~UInt(0, width = params.outerMaskBits)
   io.bs_dat.data      := d.bits.data
 
-  assert (!(d.valid && d.bits.corrupt && !d.bits.denied), "Data poisoning unsupported")
+  //assert (!(d.valid && d.bits.corrupt && !d.bits.denied), "Data poisoning unsupported")
 }

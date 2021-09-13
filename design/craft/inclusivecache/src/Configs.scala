@@ -47,7 +47,7 @@ class WithInclusiveCache(
   nBanks: Int = 1,
   nWays: Int = 8,
   capacityKB: Int = 512,
-  outerLatencyCycles: Int = 40,
+  outerLatencyCycles: Int = 80,
   subBankingFactor: Int = 4
 ) extends Config((site, here, up) => {
   case InclusiveCacheKey => InclusiveCacheParams(
@@ -125,6 +125,10 @@ class WithInclusiveCache(
     l2.ctlnode.foreach {
       _ := subsystem.cbus.coupleTo("l2_ctrl") { TLBuffer(1) := TLFragmenter(subsystem.cbus) := _ }
     }
+
+    // interrupt
+    subsystem.ibus.fromSync := l2.intnode
+
 
     ElaborationArtefacts.add("l2.json", l2.module.json)
     (filter.node, lastLevelNode, None)

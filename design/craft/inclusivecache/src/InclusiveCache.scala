@@ -25,6 +25,7 @@ import freechips.rocketchip.diplomaticobjectmodel.logicaltree.InclusiveCacheLogi
 import freechips.rocketchip.diplomaticobjectmodel.model.OMRegisterMap
 import freechips.rocketchip.regmapper._
 import freechips.rocketchip.tilelink._
+import freechips.rocketchip.interrupts._
 import freechips.rocketchip.subsystem.BankedL2Key
 import freechips.rocketchip.util._
 
@@ -48,6 +49,7 @@ class InclusiveCache(
       resourcesOpt = Some(resources)
 
       val Description(name, mapping) = super.describe(resources)
+
       // Find the outer caches
       val outer = node.edges.out
         .flatMap(_.manager.managers)
@@ -72,6 +74,8 @@ class InclusiveCache(
       Description(name, mapping ++ extra ++ nextlevel)
     }
   }
+
+  val intnode = IntSourceNode(IntSourcePortSimple(resources = device.int))
 
   val node: TLAdapterNode = TLAdapterNode(
     clientFn  = { _ => TLClientPortParameters(Seq(TLClientParameters(
@@ -222,8 +226,17 @@ class InclusiveCache(
       scheduler
     }
 
+    // interrupt
+    val (i, _) = intnode.out(0)
+    val tl_out_d = node.out(0)._1.d
+    i(0) := tl_out_d.valid & tl_out_d.bits.corrupt
+
     def json = s"""{"banks":[${mods.map(_.json).mkString(",")}]"""
   }
+
+
+
+
 
   def logicalTreeNode: InclusiveCacheLogicalTreeNode = new InclusiveCacheLogicalTreeNode(
     device = device,
